@@ -4,122 +4,179 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>João da Silva - Wiki</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Google Fonts + AOS -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
   <style>
+    :root {
+      --bg: #f0f0f0;
+      --text: #111;
+      --accent: #00b894;
+      --nav-bg: white;
+    }
+
+    [data-theme="dark"] {
+      --bg: #1e1e1e;
+      --text: #f0f0f0;
+      --nav-bg: #111;
+    }
+
     body {
       margin: 0;
-      font-family: 'Inter', sans-serif;
-      background: #1f1f1f;
-      color: #f5f5f5;
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      scroll-behavior: smooth;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    nav {
+      background: var(--nav-bg);
+      position: fixed;
+      width: 100%;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      padding: 10px 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .toggle-theme {
+      cursor: pointer;
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
     }
 
     header {
-      background: linear-gradient(to right, #00bcd4, #009688);
-      padding: 40px 20px;
+      padding: 120px 20px 60px;
       text-align: center;
-      color: white;
     }
 
-    header h1 {
-      margin: 0;
-      font-size: 2.8rem;
+    header img {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 50%;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      margin-bottom: 20px;
     }
 
     .container {
       max-width: 800px;
       margin: auto;
-      padding: 40px 20px;
+      padding: 20px;
     }
 
-    .section {
+    section {
       margin-bottom: 60px;
-      opacity: 0;
-      transform: translateY(50px);
-      transition: all 0.6s ease;
-    }
-
-    .section.visible {
-      opacity: 1;
-      transform: translateY(0);
     }
 
     h2 {
-      border-left: 5px solid #00bcd4;
-      padding-left: 10px;
-      color: #00bcd4;
+      color: var(--accent);
       margin-bottom: 10px;
-    }
-
-    ul {
-      padding-left: 20px;
     }
 
     footer {
       text-align: center;
-      padding: 20px;
-      background-color: #111;
-      color: #888;
+      padding: 30px;
+      font-size: 0.9em;
+      background: var(--nav-bg);
+      color: #777;
+    }
+
+    @media (max-width: 600px) {
+      nav ul {
+        flex-direction: column;
+        gap: 10px;
+      }
     }
   </style>
 </head>
-
 <body>
 
+<nav>
+  <ul>
+    <li><a href="#bio">Biografia</a></li>
+    <li><a href="#carreira">Carreira</a></li>
+    <li><a href="#contrib">Contribuições</a></li>
+    <li><a href="#curiosidades">Curiosidades</a></li>
+  </ul>
+  <button class="toggle-theme" onclick="toggleTheme()">🌙 Tema</button>
+</nav>
+
 <header>
+  <img src="joao.jpg" alt="Foto de João da Silva">
   <h1>João da Silva</h1>
   <p>Enciclopédia de Pessoas Notáveis</p>
 </header>
 
 <div class="container">
-  <div class="section">
+
+  <section id="bio" data-aos="fade-up">
     <h2>Biografia</h2>
     <p>João da Silva nasceu em 12 de março de 1985 em São Paulo, Brasil. Ele é conhecido por sua carreira como engenheiro de software e por suas contribuições para projetos de código aberto.</p>
-  </div>
+  </section>
 
-  <div class="section">
+  <section id="carreira" data-aos="fade-right">
     <h2>Carreira</h2>
-    <p>Formado pela Universidade de São Paulo (USP), João iniciou sua carreira trabalhando em startups de tecnologia. Posteriormente, foi contratado por uma grande empresa onde liderou diversos projetos inovadores.</p>
-  </div>
+    <p>Formado pela Universidade de São Paulo (USP), João iniciou sua carreira em startups tecnológicas e depois liderou projetos em grandes empresas globais.</p>
+  </section>
 
-  <div class="section">
+  <section id="contrib" data-aos="fade-left">
     <h2>Contribuições</h2>
     <ul>
-      <li>Criação do framework <strong>CodeMagic.js</strong></li>
+      <li>Fundador do framework <strong>CodeMagic.js</strong></li>
       <li>Palestrante em eventos como Campus Party e TDC</li>
       <li>Mentoria para desenvolvedores iniciantes</li>
     </ul>
-  </div>
+  </section>
 
-  <div class="section">
+  <section id="curiosidades" data-aos="zoom-in-up">
     <h2>Curiosidades</h2>
-    <p>João é um amante de música clássica e toca piano nas horas vagas. Também é fã de jogos de tabuleiro e viagens internacionais.</p>
-  </div>
+    <p>João toca piano clássico, ama jogos de tabuleiro e já visitou mais de 20 países.</p>
+  </section>
+
 </div>
 
 <footer>
-  <p>Site estilo Wiki criado por Gabriel A. &copy; 2025</p>
+  <p>Site estilo Wiki criado por [Seu Nome] &copy; 2025</p>
 </footer>
 
 <script>
-  // Função que mostra as seções ao rolar
-  const sections = document.querySelectorAll('.section');
+  AOS.init();
 
-  const revealSections = () => {
-    const trigger = window.innerHeight * 0.85;
-
-    sections.forEach(section => {
-      const sectionTop = section.getBoundingClientRect().top;
-      if (sectionTop < trigger) {
-        section.classList.add('visible');
-      } else {
-        section.classList.remove('visible');
-      }
-    });
-  };
-
-  window.addEventListener('scroll', revealSections);
-  window.addEventListener('load', revealSections);
+  // Toggle modo escuro
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    if (current === 'dark') {
+      document.documentElement.removeAttribute('data-theme');
+    } else {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  }
 </script>
 
 </body>
