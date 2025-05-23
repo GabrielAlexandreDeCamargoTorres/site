@@ -3,76 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>João da Silva - Wiki</title>
+  <title>Eevee e Suas Evoluções</title>
 
-  <!-- Google Fonts + AOS -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Google Font + AOS -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
   <style>
-    :root {
-      --bg: #f0f0f0;
-      --text: #111;
-      --accent: #00b894;
-      --nav-bg: white;
-    }
-
-    [data-theme="dark"] {
-      --bg: #1e1e1e;
-      --text: #f0f0f0;
-      --nav-bg: #111;
-    }
-
     body {
       margin: 0;
       font-family: 'Poppins', sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      background: #f2f2f2;
+      color: #333;
       scroll-behavior: smooth;
-      transition: background 0.3s, color 0.3s;
-    }
-
-    nav {
-      background: var(--nav-bg);
-      position: fixed;
-      width: 100%;
-      top: 0;
-      left: 0;
-      z-index: 1000;
-      padding: 10px 20px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    nav ul {
-      list-style: none;
-      display: flex;
-      gap: 20px;
-      margin: 0;
-      padding: 0;
-    }
-
-    nav a {
-      text-decoration: none;
-      color: var(--text);
-      font-weight: 600;
-    }
-
-    .toggle-theme {
-      cursor: pointer;
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
     }
 
     header {
-      padding: 120px 20px 60px;
       text-align: center;
+      padding: 60px 20px 40px;
+      background: linear-gradient(to right, #ffce74, #ffc857);
+      color: #2c2c2c;
     }
 
     header img {
@@ -81,13 +32,17 @@
       object-fit: cover;
       border-radius: 50%;
       box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-      margin-bottom: 20px;
+    }
+
+    header h1 {
+      margin-top: 20px;
+      font-size: 2.5rem;
     }
 
     .container {
-      max-width: 800px;
+      max-width: 900px;
       margin: auto;
-      padding: 20px;
+      padding: 40px 20px;
     }
 
     section {
@@ -95,89 +50,99 @@
     }
 
     h2 {
-      color: var(--accent);
+      color: #ff8c42;
       margin-bottom: 10px;
+    }
+
+    .evolutions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+    }
+
+    .evolution-card {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+    }
+
+    .evolution-card:hover {
+      transform: scale(1.05);
     }
 
     footer {
       text-align: center;
-      padding: 30px;
+      padding: 20px;
       font-size: 0.9em;
-      background: var(--nav-bg);
       color: #777;
-    }
-
-    @media (max-width: 600px) {
-      nav ul {
-        flex-direction: column;
-        gap: 10px;
-      }
+      background: #fff;
     }
   </style>
 </head>
+
 <body>
+  <header>
+    <img src="eevee.jpg" alt="Eevee">
+    <h1>Eevee e Suas Evoluções</h1>
+    <p>Conheça o Pokémon de múltiplas possibilidades!</p>
+  </header>
 
-<nav>
-  <ul>
-    <li><a href="#bio">Biografia</a></li>
-    <li><a href="#carreira">Carreira</a></li>
-    <li><a href="#contrib">Contribuições</a></li>
-    <li><a href="#curiosidades">Curiosidades</a></li>
-  </ul>
-  <button class="toggle-theme" onclick="toggleTheme()">🌙 Tema</button>
-</nav>
+  <div class="container">
 
-<header>
-  <img src="joao.jpg" alt="Foto de João da Silva">
-  <h1>João da Silva</h1>
-  <p>Enciclopédia de Pessoas Notáveis</p>
-</header>
+    <section data-aos="fade-up">
+      <h2>Sobre o Eevee</h2>
+      <p>
+        Eevee é um Pokémon do tipo Normal conhecido por sua genética instável, o que lhe permite evoluir para várias formas diferentes, dependendo das condições. Essa característica o torna único no mundo Pokémon.
+      </p>
+    </section>
 
-<div class="container">
+    <section data-aos="fade-up">
+      <h2>Evoluções</h2>
+      <div class="evolutions">
+        <div class="evolution-card" data-aos="fade-up">
+          <h3>Vaporeon</h3>
+          <p>Tipo: Água<br>Evolui com Pedra da Água</p>
+        </div>
+        <div class="evolution-card" data-aos="fade-up" data-aos-delay="100">
+          <h3>Jolteon</h3>
+          <p>Tipo: Elétrico<br>Evolui com Pedra do Trovão</p>
+        </div>
+        <div class="evolution-card" data-aos="fade-up" data-aos-delay="200">
+          <h3>Flareon</h3>
+          <p>Tipo: Fogo<br>Evolui com Pedra do Fogo</p>
+        </div>
+        <div class="evolution-card" data-aos="fade-up" data-aos-delay="300">
+          <h3>Espeon</h3>
+          <p>Tipo: Psíquico<br>Evolui com amizade durante o dia</p>
+        </div>
+        <div class="evolution-card" data-aos="fade-up" data-aos-delay="400">
+          <h3>Umbreon</h3>
+          <p>Tipo: Noturno<br>Evolui com amizade durante a noite</p>
+        </div>
+        <div class="evolution-card" data-aos="fade-up" data-aos-delay="500">
+          <h3>Leafeon</h3>
+          <p>Tipo: Planta<br>Evolui perto de pedra de musgo</p>
+        </div>
+        <div class="evolution-card" data-aos="fade-up" data-aos-delay="600">
+          <h3>Glaceon</h3>
+          <p>Tipo: Gelo<br>Evolui perto de pedra de gelo</p>
+        </div>
+        <div class="evolution-card" data-aos="fade-up" data-aos-delay="700">
+          <h3>Sylveon</h3>
+          <p>Tipo: Fada<br>Evolui com amizade + ataque do tipo fada</p>
+        </div>
+      </div>
+    </section>
+  </div>
 
-  <section id="bio" data-aos="fade-up">
-    <h2>Biografia</h2>
-    <p>João da Silva nasceu em 12 de março de 1985 em São Paulo, Brasil. Ele é conhecido por sua carreira como engenheiro de software e por suas contribuições para projetos de código aberto.</p>
-  </section>
+  <footer>
+    <p>Site dedicado ao Eevee Criado por Gabriel A. &copy; 2025</p>
+  </footer>
 
-  <section id="carreira" data-aos="fade-right">
-    <h2>Carreira</h2>
-    <p>Formado pela Universidade de São Paulo (USP), João iniciou sua carreira em startups tecnológicas e depois liderou projetos em grandes empresas globais.</p>
-  </section>
-
-  <section id="contrib" data-aos="fade-left">
-    <h2>Contribuições</h2>
-    <ul>
-      <li>Fundador do framework <strong>CodeMagic.js</strong></li>
-      <li>Palestrante em eventos como Campus Party e TDC</li>
-      <li>Mentoria para desenvolvedores iniciantes</li>
-    </ul>
-  </section>
-
-  <section id="curiosidades" data-aos="zoom-in-up">
-    <h2>Curiosidades</h2>
-    <p>João toca piano clássico, ama jogos de tabuleiro e já visitou mais de 20 países.</p>
-  </section>
-
-</div>
-
-<footer>
-  <p>Site estilo Wiki criado por [Seu Nome] &copy; 2025</p>
-</footer>
-
-<script>
-  AOS.init();
-
-  // Toggle modo escuro
-  function toggleTheme() {
-    const current = document.documentElement.getAttribute('data-theme');
-    if (current === 'dark') {
-      document.documentElement.removeAttribute('data-theme');
-    } else {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    }
-  }
-</script>
-
+  <script>
+    AOS.init();
+  </script>
 </body>
 </html>
