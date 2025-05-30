@@ -1,148 +1,95 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Eevee e Suas Evoluções</title>
-
-  <!-- Google Font + AOS -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
-  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-
+  <meta charset="UTF-8">
+  <title>Paulinho o Loko</title>
   <style>
     body {
       margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background: #f2f2f2;
-      color: #333;
-      scroll-behavior: smooth;
-    }
-
-    header {
+      padding: 0;
+      background: black;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      color: white;
+      overflow: hidden;
       text-align: center;
-      padding: 60px 20px 40px;
-      background: linear-gradient(to right, #ffce74, #ffc857);
-      color: #2c2c2c;
     }
 
-    header img {
-      width: 150px;
-      height: 150px;
-      object-fit: cover;
-      border-radius: 50%;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    h1 {
+      font-size: 4em;
+      margin-top: 100px;
+      animation: rgbShift 3s infinite;
+      transition: text-shadow 0.3s ease;
+      cursor: pointer;
     }
 
-    header h1 {
-      margin-top: 20px;
-      font-size: 2.5rem;
+    h1:hover {
+      text-shadow: 0 0 15px white, 0 0 30px #00ffff, 0 0 40px #ff00ff;
     }
 
-    .container {
-      max-width: 900px;
-      margin: auto;
-      padding: 40px 20px;
+    p {
+      font-size: 1.5em;
+      margin: 30px auto;
+      width: 60%;
+      animation: floatText 4s ease-in-out infinite;
     }
 
-    section {
-      margin-bottom: 60px;
+    @keyframes rgbShift {
+      0%   { color: red; }
+      25%  { color: lime; }
+      50%  { color: cyan; }
+      75%  { color: magenta; }
+      100% { color: red; }
     }
 
-    h2 {
-      color: #ff8c42;
-      margin-bottom: 10px;
+    @keyframes floatText {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-15px); }
     }
 
-    .evolutions {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 20px;
+    .glow-btn {
+      margin-top: 50px;
+      padding: 15px 30px;
+      font-size: 1.2em;
+      border: 2px solid white;
+      color: white;
+      background: transparent;
+      cursor: pointer;
+      animation: rgbShift 2s infinite;
+      transition: box-shadow 0.3s ease;
     }
 
-    .evolution-card {
-      background: white;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      transition: transform 0.3s;
+    .glow-btn:hover {
+      box-shadow: 0 0 20px white, 0 0 40px #00ffff, 0 0 60px #ff00ff;
     }
 
-    .evolution-card:hover {
-      transform: scale(1.05);
+    .background-rgb {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      background: linear-gradient(270deg, red, lime, cyan, magenta, red);
+      background-size: 800% 800%;
+      animation: moveBG 20s linear infinite;
+      opacity: 0.1;
     }
 
-    footer {
-      text-align: center;
-      padding: 20px;
-      font-size: 0.9em;
-      color: #777;
-      background: #fff;
+    @keyframes moveBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
   </style>
 </head>
-
 <body>
-  <header>
-    <img src="eevee.jpg" alt="Eevee">
-    <h1>Eevee e Suas Evoluções</h1>
-    <p>Conheça o Pokémon de múltiplas possibilidades!</p>
-  </header>
 
-  <div class="container">
+  <div class="background-rgb"></div>
 
-    <section data-aos="fade-up">
-      <h2>Sobre o Eevee</h2>
-      <p>
-        Eevee é um Pokémon do tipo Normal conhecido por sua genética instável, o que lhe permite evoluir para várias formas diferentes, dependendo das condições. Essa característica o torna único no mundo Pokémon.
-      </p>
-    </section>
+  <h1>Paulinho o Loko</h1>
+  <p>Conheça a lenda urbana da quebrada. Paulinho o Loko não teme nada nem ninguém, ele chega com um grito e sai com uma risada. Ele é mistério, é caos, é carisma!</p>
 
-    <section data-aos="fade-up">
-      <h2>Evoluções</h2>
-      <div class="evolutions">
-        <div class="evolution-card" data-aos="fade-up">
-          <h3>Vaporeon</h3>
-          <p>Tipo: Água<br>Evolui com Pedra da Água</p>
-        </div>
-        <div class="evolution-card" data-aos="fade-up" data-aos-delay="100">
-          <h3>Jolteon</h3>
-          <p>Tipo: Elétrico<br>Evolui com Pedra do Trovão</p>
-        </div>
-        <div class="evolution-card" data-aos="fade-up" data-aos-delay="200">
-          <h3>Flareon</h3>
-          <p>Tipo: Fogo<br>Evolui com Pedra do Fogo</p>
-        </div>
-        <div class="evolution-card" data-aos="fade-up" data-aos-delay="300">
-          <h3>Espeon</h3>
-          <p>Tipo: Psíquico<br>Evolui com amizade durante o dia</p>
-        </div>
-        <div class="evolution-card" data-aos="fade-up" data-aos-delay="400">
-          <h3>Umbreon</h3>
-          <p>Tipo: Noturno<br>Evolui com amizade durante a noite</p>
-        </div>
-        <div class="evolution-card" data-aos="fade-up" data-aos-delay="500">
-          <h3>Leafeon</h3>
-          <p>Tipo: Planta<br>Evolui perto de pedra de musgo</p>
-        </div>
-        <div class="evolution-card" data-aos="fade-up" data-aos-delay="600">
-          <h3>Glaceon</h3>
-          <p>Tipo: Gelo<br>Evolui perto de pedra de gelo</p>
-        </div>
-        <div class="evolution-card" data-aos="fade-up" data-aos-delay="700">
-          <h3>Sylveon</h3>
-          <p>Tipo: Fada<br>Evolui com amizade + ataque do tipo fada</p>
-        </div>
-      </div>
-    </section>
-  </div>
+  <button class="glow-btn" onclick="alert('PAULINHO CHEGOU!')">Invocar o Loko</button>
 
-  <footer>
-    <p>Site dedicado ao Eevee Criado por Gabriel A. &copy; 2025</p>
-  </footer>
-
-  <script>
-    AOS.init();
-  </script>
 </body>
 </html>
