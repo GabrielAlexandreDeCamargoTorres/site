@@ -1,159 +1,237 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo Clicker - Vaporeon</title>
-    <style>
-        body {
-            background-color: #b3e0ff;
-            font-family: 'Arial', sans-serif;
-            text-align: center;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
+  <meta charset="UTF-8">
+  <title>Jogo de Defesa Quadrado</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #121212;
+      font-family: sans-serif;
+      color: white;
+    }
 
-        #game-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            height: 100vh;
-        }
+    #gameCanvas {
+      display: block;
+      margin: 0 auto;
+      background: #1e1e1e;
+    }
 
-        #clickable-square {
-            width: 150px;
-            height: 150px;
-            background-color: #4a90e2;
-            border: 2px solid #1e74d0;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
+    #ui {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.6);
+      padding: 10px;
+      border-radius: 8px;
+    }
 
-        #clickable-square:hover {
-            background-color: #2e5e8c;
-        }
+    button {
+      margin-top: 5px;
+      display: block;
+      width: 180px;
+      padding: 6px;
+      border: none;
+      background: #444;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
 
-        #score {
-            font-size: 2.5em;
-            margin: 20px 0;
-        }
-
-        .upgrade {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #ffcd45;
-            border: 2px solid #ff9933;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1.2em;
-            width: 200px;
-            margin-bottom: 10px;
-        }
-
-        .upgrade:hover {
-            background-color: #ff9b00;
-        }
-
-        .upgrade:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-
-        #auto-clicker {
-            background-color: #7f42f5;
-            border-color: #5a3cb0;
-        }
-
-        #auto-clicker:hover {
-            background-color: #6b34d4;
-        }
-    </style>
+    button:hover {
+      background: #666;
+    }
+  </style>
 </head>
 <body>
+<canvas id="gameCanvas" width="800" height="600"></canvas>
 
-    <div id="game-container">
-        <div id="score">Pontos: 0</div>
-        <div id="clickable-square" onclick="handleClick()"></div>
+<div id="ui">
+  <div id="stats">
+    <div>💀 Kills: <span id="kills">0</span></div>
+    <div>❤️ HP: <span id="hp">10</span></div>
+    <div>⚡ Atk Speed: <span id="speed">1000ms</span></div>
+  </div>
+  <button onclick="upgradeSpeed()">⚡ Atirar Mais Rápido (10)</button>
+  <button onclick="upgradeHP()">❤️ Mais HP (10)</button>
+  <button onclick="upgradeDoublePoints()">✨ Pontos em Dobro (25)</button>
+</div>
 
-        <div class="upgrade" id="click-multiplier" onclick="buyClickMultiplier()">Upgrade de Clique (x2) - 100 Pontos</div>
-        <div class="upgrade" id="auto-clicker" onclick="buyAutoClicker()">Auto Clique - 500 Pontos</div>
-    </div>
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-    <script>
-        let score = 0;
-        let clickMultiplier = 1;
-        let autoClickerEnabled = false;
-        let autoClickerCost = 500;
-        let autoClickInterval = null;
+const center = { x: canvas.width / 2, y: canvas.height / 2 };
 
-        // Atualiza o score na tela
-        function updateScore() {
-            document.getElementById("score").textContent = "Pontos: " + score;
-        }
+let player = {
+  x: center.x,
+  y: center.y,
+  size: 20,
+  hp: 10,
+  maxHp: 10,
+  speed: 1000,
+  lastShot: 0
+};
 
-        // Função para o clique no quadrado
-        function handleClick() {
-            score += clickMultiplier;
-            updateScore();
-        }
+let enemies = [];
+let projectiles = [];
+let kills = 0;
+let points = 0;
+let doublePoints = false;
 
-        // Função para comprar upgrade de multiplicador de clique
-        function buyClickMultiplier() {
-            if (score >= 100) {
-                score -= 100;
-                clickMultiplier *= 2;
-                updateScore();
-                document.getElementById("click-multiplier").disabled = true;
-            }
-        }
+function spawnEnemy() {
+  const edge = Math.floor(Math.random() * 4);
+  let x, y;
 
-        // Função para comprar auto clique
-        function buyAutoClicker() {
-            if (score >= autoClickerCost && !autoClickerEnabled) {
-                score -= autoClickerCost;
-                autoClickerEnabled = true;
-                updateScore();
-                startAutoClicker();
-                document.getElementById("auto-clicker").disabled = true;
-            }
-        }
+  if (edge === 0) { x = 0; y = Math.random() * canvas.height; }
+  if (edge === 1) { x = canvas.width; y = Math.random() * canvas.height; }
+  if (edge === 2) { x = Math.random() * canvas.width; y = 0; }
+  if (edge === 3) { x = Math.random() * canvas.width; y = canvas.height; }
 
-        // Inicia o auto clique
-        function startAutoClicker() {
-            autoClickInterval = setInterval(() => {
-                score += clickMultiplier;
-                updateScore();
-            }, 1000); // Clica automaticamente a cada 1 segundo
-        }
+  enemies.push({ x, y, size: 15, speed: 1.2 });
+}
 
-        // Exibe os upgrades disponíveis ao jogador
-        function enableUpgrades() {
-            if (score >= 100) {
-                document.getElementById("click-multiplier").disabled = false;
-            }
+function drawPlayer() {
+  ctx.fillStyle = '#4a90e2';
+  ctx.fillRect(player.x - player.size / 2, player.y - player.size / 2, player.size, player.size);
+}
 
-            if (score >= autoClickerCost && !autoClickerEnabled) {
-                document.getElementById("auto-clicker").disabled = false;
-            }
-        }
+function drawEnemies() {
+  ctx.fillStyle = 'red';
+  enemies.forEach(e => {
+    ctx.fillRect(e.x - e.size / 2, e.y - e.size / 2, e.size, e.size);
+  });
+}
 
-        // Atualiza os upgrades a cada interação de clique
-        setInterval(enableUpgrades, 100);
+function drawProjectiles() {
+  ctx.fillStyle = 'white';
+  projectiles.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+    ctx.fill();
+  });
+}
 
-        // Função que permite clicar com o teclado (Espaço)
-        function handleKeyPress(event) {
-            if (event.code === "Space") {
-                handleClick(); // Faz a mesma coisa que o clique no quadrado
-            }
-        }
+function updateEnemies() {
+  enemies.forEach(e => {
+    const dx = player.x - e.x;
+    const dy = player.y - e.y;
+    const dist = Math.hypot(dx, dy);
+    e.x += dx / dist * e.speed;
+    e.y += dy / dist * e.speed;
 
-        // Adiciona o ouvinte de evento para a tecla Espaço
-        document.addEventListener("keydown", handleKeyPress);
+    if (dist < (e.size + player.size) / 2) {
+      player.hp--;
+      enemies.splice(enemies.indexOf(e), 1);
+    }
+  });
+}
 
-    </script>
+function updateProjectiles() {
+  projectiles.forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
 
+    enemies.forEach(e => {
+      const dx = p.x - e.x;
+      const dy = p.y - e.y;
+      if (Math.hypot(dx, dy) < e.size / 2) {
+        points += doublePoints ? 2 : 1;
+        kills++;
+        enemies.splice(enemies.indexOf(e), 1);
+        projectiles.splice(projectiles.indexOf(p), 1);
+      }
+    });
+  });
+
+  projectiles = projectiles.filter(p => p.x >= 0 && p.x <= canvas.width && p.y >= 0 && p.y <= canvas.height);
+}
+
+function shootClosestEnemy() {
+  if (Date.now() - player.lastShot < player.speed) return;
+  player.lastShot = Date.now();
+
+  if (enemies.length === 0) return;
+
+  let closest = enemies[0];
+  let closestDist = Infinity;
+
+  enemies.forEach(e => {
+    const dist = Math.hypot(player.x - e.x, player.y - e.y);
+    if (dist < closestDist) {
+      closestDist = dist;
+      closest = e;
+    }
+  });
+
+  const dx = closest.x - player.x;
+  const dy = closest.y - player.y;
+  const dist = Math.hypot(dx, dy);
+  const speed = 5;
+
+  projectiles.push({
+    x: player.x,
+    y: player.y,
+    vx: dx / dist * speed,
+    vy: dy / dist * speed
+  });
+}
+
+function updateUI() {
+  document.getElementById('kills').innerText = kills;
+  document.getElementById('hp').innerText = player.hp;
+  document.getElementById('speed').innerText = player.speed + "ms";
+}
+
+function upgradeSpeed() {
+  if (points >= 10 && player.speed > 200) {
+    points -= 10;
+    player.speed -= 150;
+  }
+}
+
+function upgradeHP() {
+  if (points >= 10) {
+    points -= 10;
+    player.hp++;
+    player.maxHp++;
+  }
+}
+
+function upgradeDoublePoints() {
+  if (points >= 25 && !doublePoints) {
+    points -= 25;
+    doublePoints = true;
+  }
+}
+
+function gameLoop() {
+  if (player.hp <= 0) {
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'white';
+    ctx.font = '30px sans-serif';
+    ctx.fillText('Game Over', canvas.width / 2 - 80, canvas.height / 2);
+    return;
+  }
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawPlayer();
+  drawEnemies();
+  drawProjectiles();
+  updateEnemies();
+  updateProjectiles();
+  shootClosestEnemy();
+  updateUI();
+
+  requestAnimationFrame(gameLoop);
+}
+
+// Spawn inimigos a cada 1s
+setInterval(spawnEnemy, 1000);
+requestAnimationFrame(gameLoop);
+</script>
 </body>
 </html>
