@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Batalha estilo Undertale</title>
+  <title>Batalha Estilo Undertale</title>
   <style>
     body {
       margin: 0;
       padding: 0;
-      background: #000;
+      background-color: #000;
       font-family: sans-serif;
       color: white;
     }
@@ -16,7 +16,7 @@
     canvas {
       display: block;
       margin: 0 auto;
-      background: #222;
+      background-color: #222;
     }
 
     #menu {
@@ -42,174 +42,151 @@
       background-color: #ff5b00;
     }
 
-    .hp-bar {
+    #stats {
       position: absolute;
       top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #333;
+      left: 10px;
+      font-size: 18px;
+      color: white;
+    }
+
+    #playerHP {
+      background: red;
       width: 200px;
       height: 20px;
       border: 2px solid #fff;
     }
 
-    .hp-fill {
-      background: green;
-      width: 100%;
-      height: 100%;
-    }
-
-    #battleInfo {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      font-size: 18px;
-    }
-
-    .menu-button:focus {
-      outline: none;
+    #enemyHP {
+      background: blue;
+      width: 200px;
+      height: 20px;
+      border: 2px solid #fff;
     }
   </style>
 </head>
 <body>
 
 <canvas id="gameCanvas" width="800" height="600"></canvas>
+
 <div id="menu">
   <button class="menu-button" id="fightButton">FIGHT</button>
   <button class="menu-button" id="actButton">ACT</button>
   <button class="menu-button" id="itemButton">ITEM</button>
   <button class="menu-button" id="mercyButton">MERCY</button>
 </div>
-<div id="battleInfo">
-  <div id="playerStats">HP: 20/20</div>
-  <div id="enemyStats">Enemy HP: 30/30</div>
+
+<div id="stats">
+  <div>Jogador HP: <div id="playerHP"></div></div>
+  <div>Inimigo HP: <div id="enemyHP"></div></div>
 </div>
 
 <script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
 
-let player = {
-  x: 150,
-  y: 500,
-  size: 30,
-  hp: 20,
-  maxHp: 20,
-};
+  let player = {
+    x: 150,
+    y: 500,
+    size: 30,
+    hp: 20,
+    maxHp: 20
+  };
 
-let enemy = {
-  x: 600,
-  y: 100,
-  size: 30,
-  hp: 30,
-  maxHp: 30,
-};
+  let enemy = {
+    x: 600,
+    y: 100,
+    size: 30,
+    hp: 30,
+    maxHp: 30
+  };
 
-let bullets = [];
-let attackState = "NONE";
-let gameState = "FIGHT"; // FIGHT, ACT, ITEM, MERCY
-let isGameOver = false;
+  let gameState = "FIGHT"; // FIGHT, ACT, ITEM, MERCY
+  let gameOver = false;
 
-const hpBar = document.querySelector('.hp-fill');
-const playerStats = document.getElementById('playerStats');
-const enemyStats = document.getElementById('enemyStats');
+  const playerHPBar = document.getElementById('playerHP');
+  const enemyHPBar = document.getElementById('enemyHP');
 
-function drawPlayer() {
-  ctx.fillStyle = 'green';
-  ctx.fillRect(player.x - player.size / 2, player.y - player.size / 2, player.size, player.size);
-}
+  function drawPlayer() {
+    ctx.fillStyle = 'green';
+    ctx.fillRect(player.x - player.size / 2, player.y - player.size / 2, player.size, player.size);
+  }
 
-function drawEnemy() {
-  ctx.fillStyle = 'red';
-  ctx.fillRect(enemy.x - enemy.size / 2, enemy.y - enemy.size / 2, enemy.size, enemy.size);
-}
+  function drawEnemy() {
+    ctx.fillStyle = 'red';
+    ctx.fillRect(enemy.x - enemy.size / 2, enemy.y - enemy.size / 2, enemy.size, enemy.size);
+  }
 
-function drawBullets() {
-  bullets.forEach((bullet, index) => {
-    ctx.fillStyle = 'yellow';
-    ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-    bullet.y += bullet.speed;
-    if (bullet.y > canvas.height) {
-      bullets.splice(index, 1); // Remove a bala quando sai da tela
+  function updateUI() {
+    playerHPBar.style.width = (player.hp / player.maxHp) * 100 + '%';
+    enemyHPBar.style.width = (enemy.hp / enemy.maxHp) * 100 + '%';
+  }
+
+  function handleFight() {
+    // O jogador causa dano ao inimigo
+    enemy.hp -= 5;
+    if (enemy.hp <= 0) {
+      enemy.hp = 0;
+      gameState = "VICTORY";
     }
+  }
+
+  function handleAct() {
+    alert("Você interagiu com o inimigo.");
+  }
+
+  function handleItem() {
+    player.hp = Math.min(player.hp + 5, player.maxHp);
+  }
+
+  function handleMercy() {
+    alert("Você tentou poupar o inimigo!");
+  }
+
+  function gameLoop() {
+    if (gameOver) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawPlayer();
+    drawEnemy();
+
+    if (gameState === "FIGHT") {
+      handleFight();
+    }
+
+    if (gameState === "VICTORY") {
+      ctx.fillStyle = 'white';
+      ctx.font = '40px Arial';
+      ctx.fillText("Você Venceu!", canvas.width / 2 - 100, canvas.height / 2);
+    }
+
+    updateUI();
+
+    requestAnimationFrame(gameLoop);
+  }
+
+  // Menu Actions
+  document.getElementById('fightButton').addEventListener('click', () => {
+    gameState = "FIGHT";
   });
-}
 
-function handleFight() {
-  // Ataque simples do jogador ao inimigo
-  enemy.hp -= 5;
-  if (enemy.hp <= 0) {
-    enemy.hp = 0;
-    gameState = "VICTORY"; // Jogador vence
-  }
-}
+  document.getElementById('actButton').addEventListener('click', () => {
+    gameState = "ACT";
+    handleAct();
+  });
 
-function handleAct() {
-  // Ação: Pode ser um modo de interação que apenas muda o estado do jogo
-  alert("Você interagiu com o inimigo.");
-}
+  document.getElementById('itemButton').addEventListener('click', () => {
+    gameState = "ITEM";
+    handleItem();
+  });
 
-function handleItem() {
-  // Itens: Jogador pode usar itens para restaurar HP, por exemplo
-  player.hp = Math.min(player.hp + 5, player.maxHp);
-}
+  document.getElementById('mercyButton').addEventListener('click', () => {
+    gameState = "MERCY";
+    handleMercy();
+  });
 
-function handleMercy() {
-  // Mercy: Jogador tenta poupar o inimigo
-  alert("Você tentou poupar o inimigo!");
-}
-
-function updateUI() {
-  playerStats.textContent = `HP: ${player.hp}/${player.maxHp}`;
-  enemyStats.textContent = `Enemy HP: ${enemy.hp}/${enemy.maxHp}`;
-  hpBar.style.width = (player.hp / player.maxHp) * 100 + '%';
-}
-
-function drawBattleScreen() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawPlayer();
-  drawEnemy();
-  drawBullets();
-}
-
-function gameLoop() {
-  if (isGameOver) return;
-
-  drawBattleScreen();
-  updateUI();
-  
-  if (gameState === "FIGHT") {
-    handleFight();
-  }
-
-  if (gameState === "VICTORY") {
-    ctx.fillStyle = 'white';
-    ctx.font = '40px Arial';
-    ctx.fillText("Você venceu!", canvas.width / 2 - 100, canvas.height / 2);
-  }
-
-  requestAnimationFrame(gameLoop);
-}
-
-// Menu Actions
-document.getElementById('fightButton').addEventListener('click', () => {
-  gameState = "FIGHT";
-});
-
-document.getElementById('actButton').addEventListener('click', () => {
-  gameState = "ACT";
-});
-
-document.getElementById('itemButton').addEventListener('click', () => {
-  gameState = "ITEM";
-});
-
-document.getElementById('mercyButton').addEventListener('click', () => {
-  gameState = "MERCY";
-});
-
-gameLoop();
-
+  gameLoop();
 </script>
+
 </body>
 </html>
