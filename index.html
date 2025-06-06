@@ -8,67 +8,81 @@
     body {
       margin: 0;
       padding: 0;
-      overflow: hidden;
-      background: #222;
+      background: #000;
       font-family: sans-serif;
+      color: white;
     }
 
-    #gameCanvas {
+    canvas {
       display: block;
       margin: 0 auto;
-      background: #000;
+      background: #222;
     }
 
-    #healthBar {
+    #menu {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+    }
+
+    .menu-button {
+      background-color: #ff7b00;
+      border: 1px solid #ff5b00;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 18px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .menu-button:hover {
+      background-color: #ff5b00;
+    }
+
+    .hp-bar {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      width: 200px;
+      height: 20px;
+      border: 2px solid #fff;
+    }
+
+    .hp-fill {
+      background: green;
+      width: 100%;
+      height: 100%;
+    }
+
+    #battleInfo {
       position: absolute;
       top: 10px;
       left: 10px;
-      background: green;
-      height: 20px;
-      width: 100%;
+      font-size: 18px;
     }
 
-    #playerHealth {
-      background: red;
-      height: 100%;
-      width: 100%;
-    }
-
-    #enemyHealth {
-      background: blue;
-      height: 100%;
-      width: 100%;
-    }
-
-    #ui {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      color: white;
-      font-size: 20px;
-      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
-    }
-
-    .attackText {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 40px;
-      color: white;
-      opacity: 0;
+    .menu-button:focus {
+      outline: none;
     }
   </style>
 </head>
 <body>
 
 <canvas id="gameCanvas" width="800" height="600"></canvas>
-<div id="ui">
-  <div>HP do Jogador: <span id="playerHP">100</span></div>
-  <div>HP do Inimigo: <span id="enemyHP">100</span></div>
+<div id="menu">
+  <button class="menu-button" id="fightButton">FIGHT</button>
+  <button class="menu-button" id="actButton">ACT</button>
+  <button class="menu-button" id="itemButton">ITEM</button>
+  <button class="menu-button" id="mercyButton">MERCY</button>
 </div>
-<div id="healthBar">
-  <div id="playerHealth"></div>
+<div id="battleInfo">
+  <div id="playerStats">HP: 20/20</div>
+  <div id="enemyStats">Enemy HP: 30/30</div>
 </div>
 
 <script>
@@ -76,137 +90,126 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 let player = {
-  x: canvas.width / 2,
-  y: canvas.height - 50,
-  width: 50,
-  height: 20,
-  speed: 5,
-  hp: 100
+  x: 150,
+  y: 500,
+  size: 30,
+  hp: 20,
+  maxHp: 20,
 };
 
 let enemy = {
-  x: canvas.width / 2 - 25,
-  y: 50,
-  width: 50,
-  height: 50,
-  hp: 100
+  x: 600,
+  y: 100,
+  size: 30,
+  hp: 30,
+  maxHp: 30,
 };
 
 let bullets = [];
-let attackText = document.createElement('div');
-attackText.className = 'attackText';
-document.body.appendChild(attackText);
+let attackState = "NONE";
+let gameState = "FIGHT"; // FIGHT, ACT, ITEM, MERCY
+let isGameOver = false;
 
-let keys = {};
-
-let gameOver = false;
-let attacking = false;
+const hpBar = document.querySelector('.hp-fill');
+const playerStats = document.getElementById('playerStats');
+const enemyStats = document.getElementById('enemyStats');
 
 function drawPlayer() {
   ctx.fillStyle = 'green';
-  ctx.fillRect(player.x - player.width / 2, player.y, player.width, player.height);
+  ctx.fillRect(player.x - player.size / 2, player.y - player.size / 2, player.size, player.size);
 }
 
 function drawEnemy() {
   ctx.fillStyle = 'red';
-  ctx.fillRect(enemy.x - enemy.width / 2, enemy.y, enemy.width, enemy.height);
+  ctx.fillRect(enemy.x - enemy.size / 2, enemy.y - enemy.size / 2, enemy.size, enemy.size);
 }
 
 function drawBullets() {
-  bullets.forEach(bullet => {
-    ctx.fillStyle = 'yellow';
-    ctx.fillRect(bullet.x, bullet.y, 10, 20);
-  });
-}
-
-function updateBullets() {
   bullets.forEach((bullet, index) => {
-    bullet.y += 5;  // velocidade da bala
+    ctx.fillStyle = 'yellow';
+    ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+    bullet.y += bullet.speed;
     if (bullet.y > canvas.height) {
-      bullets.splice(index, 1); // Remove a bala quando ela sai da tela
-    }
-
-    // Verifica colisão com o jogador
-    if (bullet.x >= player.x - player.width / 2 && bullet.x <= player.x + player.width / 2 &&
-        bullet.y + 20 >= player.y && bullet.y <= player.y + player.height) {
-      player.hp -= 10; // Diminui vida do jogador
-      bullets.splice(index, 1);
-    }
-
-    // Verifica colisão com o inimigo (para simular dano)
-    if (bullet.x >= enemy.x - enemy.width / 2 && bullet.x <= enemy.x + enemy.width / 2 &&
-        bullet.y + 20 >= enemy.y && bullet.y <= enemy.y + enemy.height) {
-      enemy.hp -= 10; // Diminui vida do inimigo
-      bullets.splice(index, 1);
+      bullets.splice(index, 1); // Remove a bala quando sai da tela
     }
   });
 }
 
-function drawAttackText() {
-  if (attacking) {
-    attackText.innerText = 'ATACANDO!';
-    attackText.style.opacity = 1;
-  } else {
-    attackText.style.opacity = 0;
+function handleFight() {
+  // Ataque simples do jogador ao inimigo
+  enemy.hp -= 5;
+  if (enemy.hp <= 0) {
+    enemy.hp = 0;
+    gameState = "VICTORY"; // Jogador vence
   }
 }
 
-function movePlayer() {
-  if (keys['ArrowLeft'] && player.x - player.width / 2 > 0) player.x -= player.speed;
-  if (keys['ArrowRight'] && player.x + player.width / 2 < canvas.width) player.x += player.speed;
+function handleAct() {
+  // Ação: Pode ser um modo de interação que apenas muda o estado do jogo
+  alert("Você interagiu com o inimigo.");
 }
 
-function createBullet() {
-  if (!attacking) {
-    bullets.push({ x: player.x, y: player.y - player.height / 2 });
-    attacking = true;
-    setTimeout(() => attacking = false, 500); // Aguarda meio segundo antes de poder atacar novamente
-  }
+function handleItem() {
+  // Itens: Jogador pode usar itens para restaurar HP, por exemplo
+  player.hp = Math.min(player.hp + 5, player.maxHp);
+}
+
+function handleMercy() {
+  // Mercy: Jogador tenta poupar o inimigo
+  alert("Você tentou poupar o inimigo!");
 }
 
 function updateUI() {
-  document.getElementById('playerHP').innerText = player.hp;
-  document.getElementById('enemyHP').innerText = enemy.hp;
-  document.getElementById('playerHealth').style.width = (player.hp / 100) * 100 + '%';
+  playerStats.textContent = `HP: ${player.hp}/${player.maxHp}`;
+  enemyStats.textContent = `Enemy HP: ${enemy.hp}/${enemy.maxHp}`;
+  hpBar.style.width = (player.hp / player.maxHp) * 100 + '%';
 }
 
-function gameLoop() {
-  if (gameOver) return;
-
+function drawBattleScreen() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  movePlayer();
   drawPlayer();
   drawEnemy();
   drawBullets();
-  updateBullets();
-  drawAttackText();
-  updateUI();
+}
 
-  if (enemy.hp <= 0 || player.hp <= 0) {
-    gameOver = true;
-    const winner = player.hp <= 0 ? 'Inimigo' : 'Jogador';
-    attackText.innerText = `${winner} Venceu!`;
-    attackText.style.opacity = 1;
+function gameLoop() {
+  if (isGameOver) return;
+
+  drawBattleScreen();
+  updateUI();
+  
+  if (gameState === "FIGHT") {
+    handleFight();
+  }
+
+  if (gameState === "VICTORY") {
+    ctx.fillStyle = 'white';
+    ctx.font = '40px Arial';
+    ctx.fillText("Você venceu!", canvas.width / 2 - 100, canvas.height / 2);
   }
 
   requestAnimationFrame(gameLoop);
 }
 
-// Controle do teclado
-window.addEventListener('keydown', (e) => {
-  keys[e.key] = true;
-  if (e.key === ' ' && !attacking) { // Tecla de espaço para atacar
-    createBullet();
-  }
+// Menu Actions
+document.getElementById('fightButton').addEventListener('click', () => {
+  gameState = "FIGHT";
 });
 
-window.addEventListener('keyup', (e) => {
-  keys[e.key] = false;
+document.getElementById('actButton').addEventListener('click', () => {
+  gameState = "ACT";
+});
+
+document.getElementById('itemButton').addEventListener('click', () => {
+  gameState = "ITEM";
+});
+
+document.getElementById('mercyButton').addEventListener('click', () => {
+  gameState = "MERCY";
 });
 
 gameLoop();
-</script>
 
+</script>
 </body>
 </html>
