@@ -53,6 +53,7 @@
     <div>💀 Kills: <span id="kills">0</span></div>
     <div>❤️ HP: <span id="hp">10</span></div>
     <div>⚡ Atk Speed: <span id="speed">1000ms</span></div>
+    <div>🏆 Pontuação Total: <span id="totalPoints">0</span></div> <!-- Pontuação Total -->
   </div>
   <button onclick="upgradeSpeed()">⚡ Atirar Mais Rápido (10)</button>
   <button onclick="upgradeHP()">❤️ Mais HP (10)</button>
@@ -79,6 +80,7 @@ let enemies = [];
 let projectiles = [];
 let kills = 0;
 let points = 0;
+let totalPoints = 0; // Variável para pontuação total
 let doublePoints = false;
 
 function spawnEnemy() {
@@ -140,6 +142,7 @@ function updateProjectiles() {
       if (Math.hypot(dx, dy) < e.size / 2) {
         points += doublePoints ? 2 : 1;
         kills++;
+        totalPoints += doublePoints ? 2 : 1; // Atualiza a pontuação total
         enemies.splice(enemies.indexOf(e), 1);
         projectiles.splice(projectiles.indexOf(p), 1);
       }
@@ -183,6 +186,7 @@ function updateUI() {
   document.getElementById('kills').innerText = kills;
   document.getElementById('hp').innerText = player.hp;
   document.getElementById('speed').innerText = player.speed + "ms";
+  document.getElementById('totalPoints').innerText = totalPoints; // Atualiza a pontuação total
 }
 
 function upgradeSpeed() {
