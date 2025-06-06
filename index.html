@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Jogo de Defesa Quadrado</title>
+  <title>Jogo de Luta</title>
   <style>
     html, body {
       margin: 0;
@@ -19,223 +19,157 @@
       background: #1e1e1e;
     }
 
-    #ui {
+    #result {
       position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(0,0,0,0.6);
-      padding: 10px;
-      border-radius: 8px;
-    }
-
-    button {
-      margin-top: 5px;
-      display: block;
-      width: 180px;
-      padding: 6px;
-      border: none;
-      background: #444;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 30px;
       color: white;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #666;
     }
   </style>
 </head>
 <body>
-<canvas id="gameCanvas" width="800" height="600"></canvas>
-
-<div id="ui">
-  <div id="stats">
-    <div>💀 Kills: <span id="kills">0</span></div>
-    <div>❤️ HP: <span id="hp">10</span></div>
-    <div>⚡ Atk Speed: <span id="speed">1000ms</span></div>
-    <div>🏆 Pontuação Total: <span id="totalPoints">0</span></div> <!-- Pontuação Total -->
-  </div>
-  <button onclick="upgradeSpeed()">⚡ Atirar Mais Rápido (10)</button>
-  <button onclick="upgradeHP()">❤️ Mais HP (10)</button>
-  <button onclick="upgradeDoublePoints()">✨ Pontos em Dobro (25)</button>
-</div>
+<canvas id="gameCanvas" width="800" height="400"></canvas>
+<div id="result"></div>
 
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-const center = { x: canvas.width / 2, y: canvas.height / 2 };
-
-let player = {
-  x: center.x,
-  y: center.y,
-  size: 20,
-  hp: 10,
-  maxHp: 10,
-  speed: 1000,
-  lastShot: 0
+const redSquare = {
+  x: 150,
+  y: 300,
+  size: 40,
+  speed: 5,
+  hp: 100,
+  color: 'red',
+  attackBox: { x: 190, y: 290, width: 20, height: 10 }, // Hitbox do ataque
+  attackCooldown: 0
 };
 
-let enemies = [];
-let projectiles = [];
-let kills = 0;
-let points = 0;
-let totalPoints = 0; // Variável para pontuação total
-let doublePoints = false;
+const blueSquare = {
+  x: 600,
+  y: 300,
+  size: 40,
+  speed: 3,
+  hp: 100,
+  color: 'blue',
+  attackBox: { x: 540, y: 290, width: 20, height: 10 }, // Hitbox do ataque
+  attackCooldown: 0
+};
 
-function spawnEnemy() {
-  const edge = Math.floor(Math.random() * 4);
-  let x, y;
+let redAttack = [];
+let blueAttack = [];
+let gameOver = false;
 
-  if (edge === 0) { x = 0; y = Math.random() * canvas.height; }
-  if (edge === 1) { x = canvas.width; y = Math.random() * canvas.height; }
-  if (edge === 2) { x = Math.random() * canvas.width; y = 0; }
-  if (edge === 3) { x = Math.random() * canvas.width; y = canvas.height; }
-
-  enemies.push({ x, y, size: 15, speed: 1.2 });
+function drawSquare(x, y, size, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(x - size / 2, y - size / 2, size, size);
 }
 
-function drawPlayer() {
-  ctx.fillStyle = '#4a90e2';
-  ctx.fillRect(player.x - player.size / 2, player.y - player.size / 2, player.size, player.size);
+function drawHitbox(x, y, width, height) {
+  ctx.fillStyle = 'green';
+  ctx.fillRect(x, y, width, height);
 }
 
-function drawEnemies() {
-  ctx.fillStyle = 'red';
-  enemies.forEach(e => {
-    ctx.fillRect(e.x - e.size / 2, e.y - e.size / 2, e.size, e.size);
-  });
+function drawProjectile(x, y, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(x, y, 10, 5); // Bola de fogo (retângulo)
 }
 
-function drawProjectiles() {
-  ctx.fillStyle = 'white';
-  projectiles.forEach(p => {
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-    ctx.fill();
-  });
-}
-
-function updateEnemies() {
-  enemies.forEach(e => {
-    const dx = player.x - e.x;
-    const dy = player.y - e.y;
-    const dist = Math.hypot(dx, dy);
-    e.x += dx / dist * e.speed;
-    e.y += dy / dist * e.speed;
-
-    if (dist < (e.size + player.size) / 2) {
-      player.hp--;
-      enemies.splice(enemies.indexOf(e), 1);
-    }
-  });
-}
-
-function updateProjectiles() {
-  projectiles.forEach(p => {
-    p.x += p.vx;
-    p.y += p.vy;
-
-    enemies.forEach(e => {
-      const dx = p.x - e.x;
-      const dy = p.y - e.y;
-      if (Math.hypot(dx, dy) < e.size / 2) {
-        points += doublePoints ? 2 : 1;
-        kills++;
-        totalPoints += doublePoints ? 2 : 1; // Atualiza a pontuação total
-        enemies.splice(enemies.indexOf(e), 1);
-        projectiles.splice(projectiles.indexOf(p), 1);
-      }
-    });
-  });
-
-  projectiles = projectiles.filter(p => p.x >= 0 && p.x <= canvas.width && p.y >= 0 && p.y <= canvas.height);
-}
-
-function shootClosestEnemy() {
-  if (Date.now() - player.lastShot < player.speed) return;
-  player.lastShot = Date.now();
-
-  if (enemies.length === 0) return;
-
-  let closest = enemies[0];
-  let closestDist = Infinity;
-
-  enemies.forEach(e => {
-    const dist = Math.hypot(player.x - e.x, player.y - e.y);
-    if (dist < closestDist) {
-      closestDist = dist;
-      closest = e;
-    }
-  });
-
-  const dx = closest.x - player.x;
-  const dy = closest.y - player.y;
-  const dist = Math.hypot(dx, dy);
-  const speed = 5;
-
-  projectiles.push({
-    x: player.x,
-    y: player.y,
-    vx: dx / dist * speed,
-    vy: dy / dist * speed
-  });
-}
-
-function updateUI() {
-  document.getElementById('kills').innerText = kills;
-  document.getElementById('hp').innerText = player.hp;
-  document.getElementById('speed').innerText = player.speed + "ms";
-  document.getElementById('totalPoints').innerText = totalPoints; // Atualiza a pontuação total
-}
-
-function upgradeSpeed() {
-  if (points >= 10 && player.speed > 200) {
-    points -= 10;
-    player.speed -= 150;
-  }
-}
-
-function upgradeHP() {
-  if (points >= 10) {
-    points -= 10;
-    player.hp++;
-    player.maxHp++;
-  }
-}
-
-function upgradeDoublePoints() {
-  if (points >= 25 && !doublePoints) {
-    points -= 25;
-    doublePoints = true;
-  }
-}
-
-function gameLoop() {
-  if (player.hp <= 0) {
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = 'white';
-    ctx.font = '30px sans-serif';
-    ctx.fillText('Game Over', canvas.width / 2 - 80, canvas.height / 2);
-    return;
-  }
+function update() {
+  if (gameOver) return;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawPlayer();
-  drawEnemies();
-  drawProjectiles();
-  updateEnemies();
-  updateProjectiles();
-  shootClosestEnemy();
-  updateUI();
 
+  // Movimentação do jogador (quadrado vermelho)
+  if (keys['ArrowLeft']) redSquare.x -= redSquare.speed;
+  if (keys['ArrowRight']) redSquare.x += redSquare.speed;
+
+  // Movimentação do inimigo (quadrado azul - IA simples)
+  if (blueSquare.x < redSquare.x) blueSquare.x += blueSquare.speed;
+  if (blueSquare.x > redSquare.x) blueSquare.x -= blueSquare.speed;
+
+  // Desenhando os quadrados
+  drawSquare(redSquare.x, redSquare.y, redSquare.size, redSquare.color);
+  drawSquare(blueSquare.x, blueSquare.y, blueSquare.size, blueSquare.color);
+
+  // Desenhando hitboxes (áreas de ataque)
+  drawHitbox(redSquare.attackBox.x, redSquare.attackBox.y, redSquare.attackBox.width, redSquare.attackBox.height);
+  drawHitbox(blueSquare.attackBox.x, blueSquare.attackBox.y, blueSquare.attackBox.width, blueSquare.attackBox.height);
+
+  // Desenhando os projéteis (bolas de fogo)
+  redAttack.forEach((proj, index) => {
+    proj.x += 7; // velocidade da bola de fogo do vermelho
+    drawProjectile(proj.x, proj.y, 'yellow');
+    // Verifica se atingiu o inimigo
+    if (proj.x > blueSquare.x - blueSquare.size / 2 && proj.x < blueSquare.x + blueSquare.size / 2 &&
+        proj.y > blueSquare.y - blueSquare.size / 2 && proj.y < blueSquare.y + blueSquare.size / 2) {
+      blueSquare.hp -= 10;
+      redAttack.splice(index, 1); // Remove o projétil
+    }
+    // Remove se sair da tela
+    if (proj.x > canvas.width) redAttack.splice(index, 1);
+  });
+
+  blueAttack.forEach((proj, index) => {
+    proj.x -= 7; // velocidade da bola de fogo do azul
+    drawProjectile(proj.x, proj.y, 'orange');
+    // Verifica se atingiu o jogador
+    if (proj.x > redSquare.x - redSquare.size / 2 && proj.x < redSquare.x + redSquare.size / 2 &&
+        proj.y > redSquare.y - redSquare.size / 2 && proj.y < redSquare.y + redSquare.size / 2) {
+      redSquare.hp -= 10;
+      blueAttack.splice(index, 1); // Remove o projétil
+    }
+    // Remove se sair da tela
+    if (proj.x < 0) blueAttack.splice(index, 1);
+  });
+
+  // Verifica se algum dos quadrados morreu
+  if (redSquare.hp <= 0) {
+    gameOver = true;
+    document.getElementById('result').innerText = 'Azul venceu!';
+  }
+
+  if (blueSquare.hp <= 0) {
+    gameOver = true;
+    document.getElementById('result').innerText = 'Vermelho venceu!';
+  }
+
+  // Atualizando HP na tela
+  ctx.fillStyle = 'white';
+  ctx.font = '20px Arial';
+  ctx.fillText('HP Vermelho: ' + redSquare.hp, 20, 30);
+  ctx.fillText('HP Azul: ' + blueSquare.hp, canvas.width - 120, 30);
+}
+
+let keys = {};
+
+// Controle do teclado
+window.addEventListener('keydown', (e) => {
+  keys[e.key] = true;
+  if (e.key === 'b' && redSquare.attackCooldown <= 0) {
+    redAttack.push({ x: redSquare.x + redSquare.size / 2, y: redSquare.y });
+    redSquare.attackCooldown = 30; // cooldown entre os ataques
+  }
+});
+
+window.addEventListener('keyup', (e) => {
+  keys[e.key] = false;
+});
+
+function gameLoop() {
+  if (redSquare.attackCooldown > 0) redSquare.attackCooldown--;
+  if (blueSquare.attackCooldown <= 0 && Math.random() < 0.02) {
+    blueAttack.push({ x: blueSquare.x - blueSquare.size / 2, y: blueSquare.y });
+    blueSquare.attackCooldown = 60; // cooldown para os ataques do azul
+  }
+  update();
   requestAnimationFrame(gameLoop);
 }
 
-// Spawn inimigos a cada 1s
-setInterval(spawnEnemy, 1000);
-requestAnimationFrame(gameLoop);
+gameLoop();
 </script>
 </body>
 </html>
