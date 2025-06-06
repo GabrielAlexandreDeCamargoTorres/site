@@ -143,6 +143,16 @@
         // Atualiza os upgrades a cada interação de clique
         setInterval(enableUpgrades, 100);
 
+        // Função que permite clicar com o teclado (Espaço)
+        function handleKeyPress(event) {
+            if (event.code === "Space") {
+                handleClick(); // Faz a mesma coisa que o clique no quadrado
+            }
+        }
+
+        // Adiciona o ouvinte de evento para a tecla Espaço
+        document.addEventListener("keydown", handleKeyPress);
+
     </script>
 
 </body>
