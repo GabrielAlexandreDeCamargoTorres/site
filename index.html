@@ -2,156 +2,202 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Jogo de Luta</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Batalha estilo Undertale</title>
   <style>
-    html, body {
+    body {
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background: #121212;
+      background: #222;
       font-family: sans-serif;
-      color: white;
     }
 
     #gameCanvas {
       display: block;
       margin: 0 auto;
-      background: #1e1e1e;
+      background: #000;
     }
 
-    #result {
+    #healthBar {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: green;
+      height: 20px;
+      width: 100%;
+    }
+
+    #playerHealth {
+      background: red;
+      height: 100%;
+      width: 100%;
+    }
+
+    #enemyHealth {
+      background: blue;
+      height: 100%;
+      width: 100%;
+    }
+
+    #ui {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: white;
+      font-size: 20px;
+      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+    }
+
+    .attackText {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 30px;
+      font-size: 40px;
       color: white;
+      opacity: 0;
     }
   </style>
 </head>
 <body>
-<canvas id="gameCanvas" width="800" height="400"></canvas>
-<div id="result"></div>
+
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+<div id="ui">
+  <div>HP do Jogador: <span id="playerHP">100</span></div>
+  <div>HP do Inimigo: <span id="enemyHP">100</span></div>
+</div>
+<div id="healthBar">
+  <div id="playerHealth"></div>
+</div>
 
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-const redSquare = {
-  x: 150,
-  y: 300,
-  size: 40,
+let player = {
+  x: canvas.width / 2,
+  y: canvas.height - 50,
+  width: 50,
+  height: 20,
   speed: 5,
-  hp: 100,
-  color: 'red',
-  attackBox: { x: 190, y: 290, width: 20, height: 10 }, // Hitbox do ataque
-  attackCooldown: 0
+  hp: 100
 };
 
-const blueSquare = {
-  x: 600,
-  y: 300,
-  size: 40,
-  speed: 3,
-  hp: 100,
-  color: 'blue',
-  attackBox: { x: 540, y: 290, width: 20, height: 10 }, // Hitbox do ataque
-  attackCooldown: 0
+let enemy = {
+  x: canvas.width / 2 - 25,
+  y: 50,
+  width: 50,
+  height: 50,
+  hp: 100
 };
 
-let redAttack = [];
-let blueAttack = [];
+let bullets = [];
+let attackText = document.createElement('div');
+attackText.className = 'attackText';
+document.body.appendChild(attackText);
+
+let keys = {};
+
 let gameOver = false;
+let attacking = false;
 
-function drawSquare(x, y, size, color) {
-  ctx.fillStyle = color;
-  ctx.fillRect(x - size / 2, y - size / 2, size, size);
-}
-
-function drawHitbox(x, y, width, height) {
+function drawPlayer() {
   ctx.fillStyle = 'green';
-  ctx.fillRect(x, y, width, height);
+  ctx.fillRect(player.x - player.width / 2, player.y, player.width, player.height);
 }
 
-function drawProjectile(x, y, color) {
-  ctx.fillStyle = color;
-  ctx.fillRect(x, y, 10, 5); // Bola de fogo (retângulo)
+function drawEnemy() {
+  ctx.fillStyle = 'red';
+  ctx.fillRect(enemy.x - enemy.width / 2, enemy.y, enemy.width, enemy.height);
 }
 
-function update() {
+function drawBullets() {
+  bullets.forEach(bullet => {
+    ctx.fillStyle = 'yellow';
+    ctx.fillRect(bullet.x, bullet.y, 10, 20);
+  });
+}
+
+function updateBullets() {
+  bullets.forEach((bullet, index) => {
+    bullet.y += 5;  // velocidade da bala
+    if (bullet.y > canvas.height) {
+      bullets.splice(index, 1); // Remove a bala quando ela sai da tela
+    }
+
+    // Verifica colisão com o jogador
+    if (bullet.x >= player.x - player.width / 2 && bullet.x <= player.x + player.width / 2 &&
+        bullet.y + 20 >= player.y && bullet.y <= player.y + player.height) {
+      player.hp -= 10; // Diminui vida do jogador
+      bullets.splice(index, 1);
+    }
+
+    // Verifica colisão com o inimigo (para simular dano)
+    if (bullet.x >= enemy.x - enemy.width / 2 && bullet.x <= enemy.x + enemy.width / 2 &&
+        bullet.y + 20 >= enemy.y && bullet.y <= enemy.y + enemy.height) {
+      enemy.hp -= 10; // Diminui vida do inimigo
+      bullets.splice(index, 1);
+    }
+  });
+}
+
+function drawAttackText() {
+  if (attacking) {
+    attackText.innerText = 'ATACANDO!';
+    attackText.style.opacity = 1;
+  } else {
+    attackText.style.opacity = 0;
+  }
+}
+
+function movePlayer() {
+  if (keys['ArrowLeft'] && player.x - player.width / 2 > 0) player.x -= player.speed;
+  if (keys['ArrowRight'] && player.x + player.width / 2 < canvas.width) player.x += player.speed;
+}
+
+function createBullet() {
+  if (!attacking) {
+    bullets.push({ x: player.x, y: player.y - player.height / 2 });
+    attacking = true;
+    setTimeout(() => attacking = false, 500); // Aguarda meio segundo antes de poder atacar novamente
+  }
+}
+
+function updateUI() {
+  document.getElementById('playerHP').innerText = player.hp;
+  document.getElementById('enemyHP').innerText = enemy.hp;
+  document.getElementById('playerHealth').style.width = (player.hp / 100) * 100 + '%';
+}
+
+function gameLoop() {
   if (gameOver) return;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Movimentação do jogador (quadrado vermelho)
-  if (keys['ArrowLeft']) redSquare.x -= redSquare.speed;
-  if (keys['ArrowRight']) redSquare.x += redSquare.speed;
+  movePlayer();
+  drawPlayer();
+  drawEnemy();
+  drawBullets();
+  updateBullets();
+  drawAttackText();
+  updateUI();
 
-  // Movimentação do inimigo (quadrado azul - IA simples)
-  if (blueSquare.x < redSquare.x) blueSquare.x += blueSquare.speed;
-  if (blueSquare.x > redSquare.x) blueSquare.x -= blueSquare.speed;
-
-  // Desenhando os quadrados
-  drawSquare(redSquare.x, redSquare.y, redSquare.size, redSquare.color);
-  drawSquare(blueSquare.x, blueSquare.y, blueSquare.size, blueSquare.color);
-
-  // Desenhando hitboxes (áreas de ataque)
-  drawHitbox(redSquare.attackBox.x, redSquare.attackBox.y, redSquare.attackBox.width, redSquare.attackBox.height);
-  drawHitbox(blueSquare.attackBox.x, blueSquare.attackBox.y, blueSquare.attackBox.width, blueSquare.attackBox.height);
-
-  // Desenhando os projéteis (bolas de fogo)
-  redAttack.forEach((proj, index) => {
-    proj.x += 7; // velocidade da bola de fogo do vermelho
-    drawProjectile(proj.x, proj.y, 'yellow');
-    // Verifica se atingiu o inimigo
-    if (proj.x > blueSquare.x - blueSquare.size / 2 && proj.x < blueSquare.x + blueSquare.size / 2 &&
-        proj.y > blueSquare.y - blueSquare.size / 2 && proj.y < blueSquare.y + blueSquare.size / 2) {
-      blueSquare.hp -= 10;
-      redAttack.splice(index, 1); // Remove o projétil
-    }
-    // Remove se sair da tela
-    if (proj.x > canvas.width) redAttack.splice(index, 1);
-  });
-
-  blueAttack.forEach((proj, index) => {
-    proj.x -= 7; // velocidade da bola de fogo do azul
-    drawProjectile(proj.x, proj.y, 'orange');
-    // Verifica se atingiu o jogador
-    if (proj.x > redSquare.x - redSquare.size / 2 && proj.x < redSquare.x + redSquare.size / 2 &&
-        proj.y > redSquare.y - redSquare.size / 2 && proj.y < redSquare.y + redSquare.size / 2) {
-      redSquare.hp -= 10;
-      blueAttack.splice(index, 1); // Remove o projétil
-    }
-    // Remove se sair da tela
-    if (proj.x < 0) blueAttack.splice(index, 1);
-  });
-
-  // Verifica se algum dos quadrados morreu
-  if (redSquare.hp <= 0) {
+  if (enemy.hp <= 0 || player.hp <= 0) {
     gameOver = true;
-    document.getElementById('result').innerText = 'Azul venceu!';
+    const winner = player.hp <= 0 ? 'Inimigo' : 'Jogador';
+    attackText.innerText = `${winner} Venceu!`;
+    attackText.style.opacity = 1;
   }
 
-  if (blueSquare.hp <= 0) {
-    gameOver = true;
-    document.getElementById('result').innerText = 'Vermelho venceu!';
-  }
-
-  // Atualizando HP na tela
-  ctx.fillStyle = 'white';
-  ctx.font = '20px Arial';
-  ctx.fillText('HP Vermelho: ' + redSquare.hp, 20, 30);
-  ctx.fillText('HP Azul: ' + blueSquare.hp, canvas.width - 120, 30);
+  requestAnimationFrame(gameLoop);
 }
-
-let keys = {};
 
 // Controle do teclado
 window.addEventListener('keydown', (e) => {
   keys[e.key] = true;
-  if (e.key === 'b' && redSquare.attackCooldown <= 0) {
-    redAttack.push({ x: redSquare.x + redSquare.size / 2, y: redSquare.y });
-    redSquare.attackCooldown = 30; // cooldown entre os ataques
+  if (e.key === ' ' && !attacking) { // Tecla de espaço para atacar
+    createBullet();
   }
 });
 
@@ -159,17 +205,8 @@ window.addEventListener('keyup', (e) => {
   keys[e.key] = false;
 });
 
-function gameLoop() {
-  if (redSquare.attackCooldown > 0) redSquare.attackCooldown--;
-  if (blueSquare.attackCooldown <= 0 && Math.random() < 0.02) {
-    blueAttack.push({ x: blueSquare.x - blueSquare.size / 2, y: blueSquare.y });
-    blueSquare.attackCooldown = 60; // cooldown para os ataques do azul
-  }
-  update();
-  requestAnimationFrame(gameLoop);
-}
-
 gameLoop();
 </script>
+
 </body>
 </html>
