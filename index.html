@@ -2,26 +2,69 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Interação com a API do Sala do Futuro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Sala do Futuro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+        h1 {
+            background: linear-gradient(90deg, #ff0080, #ff8c00, #ff0080);
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbow 3s infinite linear;
+        }
+        @keyframes rainbow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-    <h1>Login no Sala do Futuro</h1>
-    <form id="loginForm">
-        <label for="ra">RA:</label>
-        <input type="text" id="ra" required>
-        <br>
-        <label for="digito">Dígito:</label>
-        <input type="text" id="digito" required>
-        <br>
-        <label for="localidade">Localidade (ex: SP):</label>
-        <input type="text" id="localidade" required>
-        <br>
-        <label for="senha">Senha:</label>
-        <input type="password" id="senha" required>
-        <br>
-        <button type="submit">Entrar</button>
-    </form>
-    <div id="resultado"></div>
+    <div class="container">
+        <h1>Amogus</h1>
+        <form id="loginForm">
+            <input type="text" id="ra" placeholder="RA" required>
+            <input type="text" id="digito" placeholder="Dígito" required>
+            <input type="text" id="localidade" placeholder="Localidade (ex: SP)" required>
+            <input type="password" id="senha" placeholder="Senha" required>
+            <button type="submit">Buscar Tarefas</button>
+        </form>
+        <div id="resultado"></div>
+    </div>
 
     <script>
         document.getElementById('loginForm').addEventListener('submit', function(event) {
@@ -32,24 +75,30 @@
             const localidade = document.getElementById('localidade').value;
             const senha = document.getElementById('senha').value;
 
-            // Montar a URL da API com os parâmetros
-            const url = `https://edusp-api.ip.tv/achievement/user/achievement?ra=${ra}&digito=${digito}&localidade=${localidade}&senha=${senha}`;
+            // Aqui você pode adicionar a lógica para autenticar e buscar as tarefas
+            // Exemplo de requisição à API (substitua pela URL correta)
+            const url = `https://sedintegracoes.educacao.sp.gov.br/credenciais/api/LoginCompletoToken`; // Substitua pela URL da API de login
 
-            // Fazer a requisição à API
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Erro na autenticação: ' + response.statusText);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // Processar os dados recebidos
-                    document.getElementById('resultado').innerText = JSON.stringify(data);
-                })
-                .catch(error => {
-                    document.getElementById('resultado').innerText = 'Erro: ' + error.message;
-                });
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ ra, digito, localidade, senha }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro na autenticação');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Aqui você pode processar os dados e buscar as tarefas
+                document.getElementById('resultado').innerText = 'Login bem-sucedido!'; // Exemplo de mensagem
+            })
+            .catch(error => {
+                document.getElementById('resultado').innerText = 'Erro: ' + error.message;
+            });
         });
     </script>
 </body>
